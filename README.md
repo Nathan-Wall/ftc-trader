@@ -1,6 +1,6 @@
 # FTC Trader
 
-This program fucntions as an extremely basic Feathercoin trader.  It's functionality is really bare, and it's really only intended as an example Proto program, not a useful trader.
+This program functions as an extremely basic Feathercoin trader.  It's functionality is really bare, and it's really only intended as an example Proto program, not a useful trader.
 
 Look through the files to see how to:
 
