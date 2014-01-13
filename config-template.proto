@@ -1,3 +1,5 @@
+// Copy this file to config.proto and enter your key and secret from BTC-e.
+
 var key = 'YOUR-KEY',
 	secret = 'YOUR-SECRET';
 
