@@ -1,0 +1,15 @@
+import Promise from '@proto:Promise';
+
+fn denodify(f) :{
+	return fn(...args) :{
+		return new Promise(fn(res, rej) :{
+			f(...args, fn(err, data) :{
+				if err != nil:
+					rej(err);
+				res(data);
+			});
+		});
+	};
+}
+
+export { denodify };

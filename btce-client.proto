@@ -1,0 +1,75 @@
+import https from 'https.proto';
+import fs from 'fs.proto';
+import crypto from 'node:crypto';
+
+var nonce = fs.existsSync('nonce.txt') ? &fs.readFileSync('nonce.txt') + 5 : 1,
+	cache = #{ },
+	CACHE_AGE = 60 * 1000;
+sym @key, @secret;
+
+fn init(key | string, secret | string) :{
+	object(this);
+	this.@key = key;
+	this.@secret = secret;
+}
+
+fn getNonce :{
+	fs.writeFile('nonce.txt', nonce + 1);
+	return nonce++;
+}
+
+async send(data | string, permitCache | boolean) :{
+	if permitCache :{
+		var info = cache[data];
+		if info.timestamp + CACHE_AGE > Date.now():
+			return info.promise;
+	}
+	var hmac = crypto.createHmac('sha512', this.@secret),
+		key = this.@key,
+		promise,
+		D = data & '&nonce=' & getNonce();
+	hmac.update(D);
+	promise = (async :{
+		var response = JSON.parse(await https.request(#{
+			hostname: 'btc-e.com',
+			port: 443,
+			path: '/tapi',
+			method: 'POST',
+			headers: {
+				'Key': key,
+				'Sign': hmac.digest('hex'),
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Content-Length': D.length
+			},
+			data: D
+		}));
+		if !response.success:
+			throw new Error(response.error);
+		return response.return;
+	})();
+	if permitCache:
+		cache[data] = #{
+			timestamp: Date.now(),
+			promise: promise
+		};
+	return promise;
+}
+
+async getInfo :{
+	return this::send('method=getInfo', true);
+}
+
+async getFunds(coin) :{
+	return (await this::getInfo()).funds[coin];
+}
+
+async trade(pair, type, rate, amount) :{
+	return this::send(
+		'method=Trade&pair='
+		& pair & '&type=' & type & '&rate=' & rate & '&amount=' & amount
+	);
+}
+
+var BtceClient = { init, getInfo, getFunds, trade };
+
+export { BtceClient as default };

@@ -1,0 +1,39 @@
+import nodeHttps from 'node:https';
+import Promise from '@proto:Promise';
+
+fn request(options | object) :{
+	return new Promise(fn(resolve) :{
+		var opts = #{ } := options,
+			data = options.data,
+			response = [ ],
+			req;
+		delete opts.data;
+		// TODO: !in
+		if !('headers' in opts):
+			opts.headers = #{ };
+		else
+			opts.headers = #{ } := opts.headers;
+		if data != nil:
+			opts.headers['Content-Length'] = data.length;
+		req = nodeHttps.request(opts, fn(res) :{
+			res.on('data', fn(d) :{
+				response.push(&d);
+			});
+			res.on('end', fn :{
+				resolve(response.join(''));
+			});
+			res.on('error', fn(e) :{
+				reject(new Error('HTTPS Request Error'));
+			});
+		});
+		if data != nil:
+			req.write(data);
+		req.end();
+	});
+}
+
+var https = {
+	request
+};
+
+export { https as default };

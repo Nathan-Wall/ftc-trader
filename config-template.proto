@@ -1,0 +1,4 @@
+var key = 'YOUR-KEY',
+	secret = 'YOUR-SECRET';
+
+export { key, secret };

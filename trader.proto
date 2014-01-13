@@ -1,0 +1,40 @@
+import BtceClient from 'btce-client.proto';
+import { key, secret } from 'config.proto';
+
+var btce = new BtceClient(key, secret);
+
+const SELL_RATE = 0.00041,
+	BUY_RATE = 0.0004;
+
+async sellFtc(amount | int) :{
+	console.log(
+		'Selling ' & amount & ' FTC at ' & SELL_RATE & ' for '
+		& (SELL_RATE * amount) & ' BTC'
+	);
+	return btce.trade('ftc_btc', 'sell', SELL_RATE, amount);
+}
+
+async buyFtc(amount | int) :{
+	console.log(
+		'Buying ' & amount & ' FTC at ' & BUY_RATE & ' for '
+		& (BUY_RATE * amount) & ' BTC'
+	);
+	return btce.trade('ftc_btc', 'buy', BUY_RATE, amount);
+}
+
+async moveFunds :{
+	var ftc = await btce.getFunds('ftc'),
+		btc = await btce.getFunds('btc');
+	try :{
+		if ftc >= 1:
+			await sellFtc(ftc);
+		if btc > 0.01:
+			await buyFtc(btc / BUY_RATE);
+	}
+	catch e :{
+		console.error('Error: ', e);
+	}
+}
+
+moveFunds();
+setInterval(moveFunds, 10 * 60 * 1000);

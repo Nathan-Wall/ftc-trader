@@ -1,0 +1,14 @@
+import { denodify } from 'node-tools.proto';
+import nodeFs from 'node:fs';
+
+var existsSync = nodeFs.existsSync,
+	readFile = denodify(nodeFs.readFile),
+	readFileSync = nodeFs.readFileSync,
+	writeFile = denodify(nodeFs.writeFile),
+	writeFileSync = nodeFs.writeFileSync;
+
+var fs = {
+	existsSync, readFile, readFileSync, writeFile, writeFileSync
+};
+
+export { fs as default };
